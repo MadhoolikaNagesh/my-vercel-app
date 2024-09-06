@@ -1,4 +1,4 @@
-import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { ClerkProvider,  SignedIn,  UserButton } from '@clerk/nextjs'
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 

@@ -2,13 +2,21 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@clerk/nextjs';
 
+// Define the type for student data
+interface Student {
+  id: string;
+  name: string;
+  age: number;
+  bloodType: string;
+}
+
 const ManageStudentPage = () => {
   const { isSignedIn } = useAuth();
-  const [studentId, setStudentId] = useState('');
-  const [studentData, setStudentData] = useState<any>(null);
-  const [updateName, setUpdateName] = useState('');
+  const [studentId, setStudentId] = useState<string>('');
+  const [studentData, setStudentData] = useState<Student | null>(null);
+  const [updateName, setUpdateName] = useState<string>('');
   const [updateAge, setUpdateAge] = useState<number | ''>('');
-  const [updateBloodType, setUpdateBloodType] = useState('');
+  const [updateBloodType, setUpdateBloodType] = useState<string>('');
   const router = useRouter();
 
   // Redirect to sign-in if not authenticated
@@ -22,7 +30,7 @@ const ManageStudentPage = () => {
     try {
       const response = await fetch(`/api/students/students?id=${studentId}`);
       if (response.ok) {
-        const data = await response.json();
+        const data: Student = await response.json();
         setStudentData(data);
         setUpdateName(data.name);
         setUpdateAge(data.age);
@@ -52,7 +60,7 @@ const ManageStudentPage = () => {
         body: JSON.stringify({ id: studentId, name: updateName, age: Number(updateAge), bloodType: updateBloodType }),
       });
       if (response.ok) {
-        const data = await response.json();
+        const data: Student = await response.json();
         setStudentData(data);
         alert('Student updated successfully');
         router.push(`/success?id=${studentId}&name=${encodeURIComponent(data.name)}&age=${data.age}&bloodType=${encodeURIComponent(data.bloodType)}&message=Student%20updated%20successfully`);
@@ -85,70 +93,70 @@ const ManageStudentPage = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.formWrapper}>
-        <h1 style={styles.heading}>Manage Student</h1>
-        <form onSubmit={handleFetch} style={styles.form}>
-          <div style={styles.formGroup}>
-            <label htmlFor="studentId" style={styles.label}>Student ID:</label>
+    <div style={styles.container as React.CSSProperties}>
+      <div style={styles.formWrapper as React.CSSProperties}>
+        <h1 style={styles.heading as React.CSSProperties}>Manage Student</h1>
+        <form onSubmit={handleFetch} style={styles.form as React.CSSProperties}>
+          <div style={styles.formGroup as React.CSSProperties}>
+            <label htmlFor="studentId" style={styles.label as React.CSSProperties}>Student ID:</label>
             <input
               id="studentId"
               type="text"
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
-              style={styles.input}
+              style={styles.input as React.CSSProperties}
               required
             />
           </div>
-          <button type="submit" style={styles.button}>Fetch Student</button>
+          <button type="submit" style={styles.button as React.CSSProperties}>Fetch Student</button>
         </form>
 
         {studentData && (
-          <div style={styles.studentInfo}>
-            <h2 style={styles.subheading}>Student Details</h2>
-            <p style={styles.studentDetail}>ID: {studentData.id}</p>
-            <p style={styles.studentDetail}>Name: {studentData.name}</p>
-            <p style={styles.studentDetail}>Age: {studentData.age}</p>
-            <p style={styles.studentDetail}>Blood Type: {studentData.bloodType}</p>
+          <div style={styles.studentInfo as React.CSSProperties}>
+            <h2 style={styles.subheading as React.CSSProperties}>Student Details</h2>
+            <p style={styles.studentDetail as React.CSSProperties}>ID: {studentData.id}</p>
+            <p style={styles.studentDetail as React.CSSProperties}>Name: {studentData.name}</p>
+            <p style={styles.studentDetail as React.CSSProperties}>Age: {studentData.age}</p>
+            <p style={styles.studentDetail as React.CSSProperties}>Blood Type: {studentData.bloodType}</p>
 
-            <h3 style={styles.subheading}>Update Student</h3>
-            <form onSubmit={handleUpdate} style={styles.form}>
-              <div style={styles.formGroup}>
-                <label htmlFor="updateName" style={styles.label}>Name:</label>
+            <h3 style={styles.subheading as React.CSSProperties}>Update Student</h3>
+            <form onSubmit={handleUpdate} style={styles.form as React.CSSProperties}>
+              <div style={styles.formGroup as React.CSSProperties}>
+                <label htmlFor="updateName" style={styles.label as React.CSSProperties}>Name:</label>
                 <input
                   id="updateName"
                   value={updateName}
                   onChange={(e) => setUpdateName(e.target.value)}
-                  style={styles.input}
+                  style={styles.input as React.CSSProperties}
                   type="text"
                   required
                 />
               </div>
-              <div style={styles.formGroup}>
-                <label htmlFor="updateAge" style={styles.label}>Age:</label>
+              <div style={styles.formGroup as React.CSSProperties}>
+                <label htmlFor="updateAge" style={styles.label as React.CSSProperties}>Age:</label>
                 <input
                   id="updateAge"
-                  value={updateAge}
+                  value={updateAge === '' ? '' : updateAge} // Handle empty state
                   onChange={(e) => setUpdateAge(Number(e.target.value))}
-                  style={styles.input}
+                  style={styles.input as React.CSSProperties}
                   type="number"
                   required
                 />
               </div>
-              <div style={styles.formGroup}>
-                <label htmlFor="updateBloodType" style={styles.label}>Blood Type:</label>
+              <div style={styles.formGroup as React.CSSProperties}>
+                <label htmlFor="updateBloodType" style={styles.label as React.CSSProperties}>Blood Type:</label>
                 <input
                   id="updateBloodType"
                   value={updateBloodType}
                   onChange={(e) => setUpdateBloodType(e.target.value)}
-                  style={styles.input}
+                  style={styles.input as React.CSSProperties}
                   type="text"
                   required
                 />
               </div>
-              <button type="submit" style={styles.button}>Update</button>
+              <button type="submit" style={styles.button as React.CSSProperties}>Update</button>
             </form>
-            <button onClick={handleDelete} style={styles.deleteButton}>Delete Student</button>
+            <button onClick={handleDelete} style={styles.deleteButton as React.CSSProperties}>Delete Student</button>
           </div>
         )}
       </div>
@@ -174,7 +182,7 @@ const styles = {
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
     maxWidth: '400px',
     width: '100%',
-    textAlign: 'center',
+    textAlign: 'center' as const, // Explicitly cast textAlign
   },
   heading: {
     fontSize: '24px',
@@ -190,7 +198,7 @@ const styles = {
     display: 'block',
     marginBottom: '8px',
     fontSize: '14px',
-    textAlign: 'left',
+    textAlign: 'left' as const, // Explicitly cast textAlign
   },
   input: {
     width: '100%',
@@ -215,7 +223,7 @@ const styles = {
     backgroundColor: '#005bb5',
   },
   studentInfo: {
-    textAlign: 'left',
+    textAlign: 'left' as const, // Explicitly cast textAlign
     marginTop: '20px',
   },
   subheading: {
