@@ -1,7 +1,5 @@
 import Head from "next/head";
-import Image from "next/image";
 import localFont from "next/font/local";
-import styles from "@/styles/Home.module.css"; // Keep this for the imported CSS module
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -19,16 +17,16 @@ import StudentForm from '../components/StudentForm';
 
 const HomePage = () => {
   return (
-    <div style={inlineStyles.container}>
+    <div style={inlineStyles.container as React.CSSProperties}>
       <Head>
         <title>Student Details</title>
       </Head>
 
-      <div style={inlineStyles.contentWrapper}>
+      <div style={inlineStyles.contentWrapper as React.CSSProperties}>
         <SignedOut>
-          <p style={inlineStyles.message}>Please sign in to access the form.</p>
+          <p style={inlineStyles.message as React.CSSProperties}>Please sign in to access the form.</p>
           <SignInButton>
-            <button style={inlineStyles.button}>Sign In</button>
+            <button style={inlineStyles.button as React.CSSProperties}>Sign In</button>
           </SignInButton>
         </SignedOut>
 
@@ -57,7 +55,7 @@ const inlineStyles = {
     padding: '40px',
     borderRadius: '8px',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    textAlign: 'center',
+    textAlign: 'center' as 'center', // Explicitly casting the value
     width: '100%',
     maxWidth: '500px',
   },
@@ -79,6 +77,4 @@ const inlineStyles = {
   buttonHover: {
     backgroundColor: '#005bb5',
   },
-
-
 };

@@ -1,29 +1,36 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
+interface Student {
+  id: string;
+  name: string;
+  age: number;
+  bloodType: string;
+}
+
 const SuccessPage = () => {
   const router = useRouter();
   const { id, name, age, bloodType, message } = router.query;
 
-  const [student, setStudent] = useState<any>(null);
-  const [updateName, setUpdateName] = useState(name || '');
-  const [updateAge, setUpdateAge] = useState(age || '');
-  const [updateBloodType, setUpdateBloodType] = useState(bloodType || '');
+  const [student, setStudent] = useState<Student | null>(null);
+  const [updateName, setUpdateName] = useState<string>(typeof name === 'string' ? name : '');
+  const [updateAge, setUpdateAge] = useState<string>(typeof age === 'string' ? age : '');
+  const [updateBloodType, setUpdateBloodType] = useState<string>(typeof bloodType === 'string' ? bloodType : '');
 
   useEffect(() => {
-    if (id) {
+    if (typeof id === 'string') {
       fetchStudentData();
     }
   }, [id]);
 
   const fetchStudentData = async () => {
     try {
-      const response = await fetch(`/api/students?id=${id}`);
+      const response = await fetch(`/api/students/students?id=${id}`);
       if (response.ok) {
-        const data = await response.json();
+        const data: Student = await response.json();
         setStudent(data);
         setUpdateName(data.name);
-        setUpdateAge(data.age);
+        setUpdateAge(data.age.toString()); // Convert age to string
         setUpdateBloodType(data.bloodType);
       } else {
         console.error('Failed to fetch student data');
@@ -35,7 +42,7 @@ const SuccessPage = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`/api/students?id=${id}`, {
+      const response = await fetch(`/api/students/students?id=${id}`, {
         method: 'DELETE',
       });
       if (response.ok) {
@@ -51,15 +58,15 @@ const SuccessPage = () => {
   const handleUpdate = async (event: React.FormEvent) => {
     event.preventDefault();
     try {
-      const response = await fetch('/api/students', {
+      const response = await fetch('/api/students/students', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id, name: updateName, age: Number(updateAge), bloodType: updateBloodType }),
+        body: JSON.stringify({ id, name: updateName, age: Number(updateAge), bloodType: updateBloodType }), // Convert updateAge to number
       });
       if (response.ok) {
-        const data = await response.json();
+        const data: Student = await response.json();
         setStudent(data);
         router.push(`/success?id=${id}&name=${encodeURIComponent(data.name)}&age=${data.age}&bloodType=${encodeURIComponent(data.bloodType)}&message=Student%20updated%20successfully`);
       } else {
@@ -70,15 +77,15 @@ const SuccessPage = () => {
     }
   };
 
-  const handleRedirectToManagePage = () => {
+  const handleRedirectToManageStudentPage = () => {
     router.push('/manage-student');
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.header}>Success</h1>
-      {message && <p style={styles.message}>{message}</p>}
-      <div style={styles.info}>
+    <div style={styles.container as React.CSSProperties}>
+      <h1 style={styles.header as React.CSSProperties}>Success</h1>
+      {message && <p style={styles.message as React.CSSProperties}>{message}</p>}
+      <div style={styles.info as React.CSSProperties}>
         <p><strong>Student ID:</strong> {id}</p>
         <p><strong>Name:</strong> {name}</p>
         <p><strong>Age:</strong> {age}</p>
@@ -86,55 +93,53 @@ const SuccessPage = () => {
       </div>
 
       {student && (
-        <div style={styles.formContainer}>
-          <h2 style={styles.subHeader}>Update Student</h2>
-          <form onSubmit={handleUpdate} style={styles.form}>
-            <div style={styles.formGroup}>
-              <label htmlFor="updateName" style={styles.label}>Name:</label>
+        <div style={styles.formContainer as React.CSSProperties}>
+          <h2 style={styles.subHeader as React.CSSProperties}>Update Student</h2>
+          <form onSubmit={handleUpdate} style={styles.form as React.CSSProperties}>
+            <div style={styles.formGroup as React.CSSProperties}>
+              <label htmlFor="updateName" style={styles.label as React.CSSProperties}>Name:</label>
               <input
                 id="updateName"
                 value={updateName}
                 onChange={(e) => setUpdateName(e.target.value)}
                 type="text"
                 required
-                style={styles.input}
+                style={styles.input as React.CSSProperties}
               />
             </div>
-            <div style={styles.formGroup}>
-              <label htmlFor="updateAge" style={styles.label}>Age:</label>
+            <div style={styles.formGroup as React.CSSProperties}>
+              <label htmlFor="updateAge" style={styles.label as React.CSSProperties}>Age:</label>
               <input
                 id="updateAge"
                 value={updateAge}
-                onChange={(e) => setUpdateAge(Number(e.target.value))}
+                onChange={(e) => setUpdateAge(e.target.value)}
                 type="number"
                 required
-                style={styles.input}
+                style={styles.input as React.CSSProperties}
               />
             </div>
-            <div style={styles.formGroup}>
-              <label htmlFor="updateBloodType" style={styles.label}>Blood Type:</label>
+            <div style={styles.formGroup as React.CSSProperties}>
+              <label htmlFor="updateBloodType" style={styles.label as React.CSSProperties}>Blood Type:</label>
               <input
                 id="updateBloodType"
                 value={updateBloodType}
                 onChange={(e) => setUpdateBloodType(e.target.value)}
                 type="text"
                 required
-                style={styles.input}
+                style={styles.input as React.CSSProperties}
               />
             </div>
-            <button type="submit" style={styles.button}>Update</button>
+            <button type="submit" style={styles.button as React.CSSProperties}>Update</button>
           </form>
 
           <button onClick={handleDelete} style={{ ...styles.button, backgroundColor: '#ff4d4f' }}>Delete Student</button>
         </div>
       )}
 
-      <button onClick={handleRedirectToManagePage} style={styles.button}>Go to Manage Page</button>
+      <button onClick={handleRedirectToManageStudentPage} style={styles.button as React.CSSProperties}>Go to Manage Page</button>
     </div>
   );
 };
-
-export default SuccessPage;
 
 const styles = {
   container: {
@@ -210,3 +215,5 @@ const styles = {
     transition: 'background-color 0.3s ease',
   },
 };
+
+export default SuccessPage;
