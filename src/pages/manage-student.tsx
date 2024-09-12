@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@clerk/nextjs';
 import React from 'react';
@@ -19,9 +19,14 @@ const ManageStudentPage = () => {
   const [updateAge, setUpdateAge] = useState<number | ''>('');
   const [updateBloodType, setUpdateBloodType] = useState<string>('');
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false); // Add a mounted state to ensure client-side rendering
 
-  // Redirect to sign-in if not authenticated
-  if (!isSignedIn) {
+  useEffect(() => {
+    setIsMounted(true); // This ensures that router.push is called only on the client-side
+  }, []);
+
+  // Redirect to sign-in if not authenticated and ensure it's running client-side
+  if (!isSignedIn && isMounted) {
     router.push('/sign-in');
     return null;
   }
@@ -64,7 +69,9 @@ const ManageStudentPage = () => {
         const data: Student = await response.json();
         setStudentData(data);
         alert('Student updated successfully');
-        router.push(`/success?id=${studentId}&name=${encodeURIComponent(data.name)}&age=${data.age}&bloodType=${encodeURIComponent(data.bloodType)}&message=Student%20updated%20successfully`);
+        if (isMounted) {
+          router.push(`/success?id=${studentId}&name=${encodeURIComponent(data.name)}&age=${data.age}&bloodType=${encodeURIComponent(data.bloodType)}&message=Student%20updated%20successfully`);
+        }
       } else {
         console.error('Failed to update student');
       }
@@ -84,7 +91,9 @@ const ManageStudentPage = () => {
         setUpdateName('');
         setUpdateAge('');
         setUpdateBloodType('');
-        router.push(`/success?message=Student%20deleted%20successfully`);
+        if (isMounted) {
+          router.push(`/success?message=Student%20deleted%20successfully`);
+        }
       } else {
         console.error('Failed to delete student');
       }

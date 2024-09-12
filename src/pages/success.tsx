@@ -11,16 +11,30 @@ interface Student {
 
 const SuccessPage = () => {
   const router = useRouter();
-  const { id, name, age, bloodType, message } = router.query;
-
+  const [isMounted, setIsMounted] = useState(false); // State to track when the component is mounted
   const [student, setStudent] = useState<Student | null>(null);
-  const [updateName, setUpdateName] = useState<string>(typeof name === 'string' ? name : '');
-  const [updateAge, setUpdateAge] = useState<string>(typeof age === 'string' ? age : '');
-  const [updateBloodType, setUpdateBloodType] = useState<string>(typeof bloodType === 'string' ? bloodType : '');
+  const [updateName, setUpdateName] = useState<string>('');
+  const [updateAge, setUpdateAge] = useState<string>('');
+  const [updateBloodType, setUpdateBloodType] = useState<string>('');
+
+  useEffect(() => {
+    setIsMounted(true); // Set to true when the component is mounted on the client
+  }, []);
+
+  useEffect(() => {
+    if (isMounted) {
+      const { id, name, age, bloodType } = router.query;
+
+      setUpdateName(typeof name === 'string' ? name : '');
+      setUpdateAge(typeof age === 'string' ? age : '');
+      setUpdateBloodType(typeof bloodType === 'string' ? bloodType : '');
+    }
+  }, [isMounted, router.query]);
 
   // Memoize the fetch function to avoid issues in the dependency array
   const fetchStudentData = useCallback(async () => {
-    if (typeof id === 'string') {
+    const { id } = router.query;
+    if (isMounted && typeof id === 'string') {
       try {
         const response = await fetch(`/api/students/students?id=${id}`);
         if (response.ok) {
@@ -36,13 +50,14 @@ const SuccessPage = () => {
         console.error('An error occurred while fetching student data:', error);
       }
     }
-  }, [id]); // Include `id` as a dependency
+  }, [isMounted, router.query]);
 
   useEffect(() => {
     fetchStudentData();
-  }, [fetchStudentData]); // Now fetchStudentData is a dependency
+  }, [fetchStudentData]);
 
   const handleDelete = async () => {
+    const { id } = router.query;
     try {
       const response = await fetch(`/api/students/students?id=${id}`, {
         method: 'DELETE',
@@ -59,6 +74,7 @@ const SuccessPage = () => {
 
   const handleUpdate = async (event: React.FormEvent) => {
     event.preventDefault();
+    const { id } = router.query;
     try {
       const response = await fetch('/api/students/students', {
         method: 'PUT',
@@ -93,20 +109,24 @@ const SuccessPage = () => {
   return (
     <div style={styles.container as React.CSSProperties}>
       <h1 style={styles.header as React.CSSProperties}>Success</h1>
-      {message && <p style={styles.message as React.CSSProperties}>{message}</p>}
+      {isMounted && router.query.message && <p style={styles.message as React.CSSProperties}>{router.query.message}</p>}
       <div style={styles.info as React.CSSProperties}>
-        <p>
-          <strong>Student ID:</strong> {id}
-        </p>
-        <p>
-          <strong>Name:</strong> {name}
-        </p>
-        <p>
-          <strong>Age:</strong> {age}
-        </p>
-        <p>
-          <strong>Blood Type:</strong> {bloodType}
-        </p>
+        {isMounted && (
+          <>
+            <p>
+              <strong>Student ID:</strong> {router.query.id}
+            </p>
+            <p>
+              <strong>Name:</strong> {router.query.name}
+            </p>
+            <p>
+              <strong>Age:</strong> {router.query.age}
+            </p>
+            <p>
+              <strong>Blood Type:</strong> {router.query.bloodType}
+            </p>
+          </>
+        )}
       </div>
 
       {student && (
