@@ -24,7 +24,6 @@ const SuccessPage = () => {
   useEffect(() => {
     if (isMounted) {
       const { id, name, age, bloodType } = router.query;
-
       setUpdateName(typeof name === 'string' ? name : '');
       setUpdateAge(typeof age === 'string' ? age : '');
       setUpdateBloodType(typeof bloodType === 'string' ? bloodType : '');
@@ -35,7 +34,9 @@ const SuccessPage = () => {
     const { id } = router.query;
     if (isMounted && typeof id === 'string') {
       try {
-        const response = await fetch(`/api/students/students?id=${id}`);
+        const response = await fetch(`/api/students/students?id=${id}`, {
+          method: 'GET',
+        });
         if (response.ok) {
           const data: Student = await response.json();
           setStudent(data);
