@@ -36,8 +36,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     case 'POST': {
       const { name, age, bloodType } = req.body;
-      if (!name || age === undefined || !bloodType) {
-        return res.status(400).json({ error: 'Missing fields' });
+      if (!name || typeof age !== 'number' || !bloodType) {
+        return res.status(400).json({ error: 'Missing or invalid fields' });
       }
 
       const newStudent: Student = {
@@ -52,9 +52,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     case 'PUT': {
-      const updateData = req.body;
-      if (!updateData.id) {
-        return res.status(400).json({ error: 'ID is required for updating' });
+      const updateData: Student = req.body;
+      if (!updateData.id || !updateData.name || typeof updateData.age !== 'number' || !updateData.bloodType) {
+        return res.status(400).json({ error: 'Missing or invalid fields' });
       }
       const studentIndex = students.findIndex((student) => student.id === updateData.id);
 

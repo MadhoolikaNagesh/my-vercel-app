@@ -32,11 +32,9 @@ const SuccessPage = () => {
 
   const fetchStudentData = useCallback(async () => {
     const { id } = router.query;
-    if (isMounted && typeof id === 'string') {
+    if (id && typeof id === 'string') {
       try {
-        const response = await fetch(`/api/students/students?id=${id}`, {
-          method: 'GET',
-        });
+        const response = await fetch(`/api/students/students?id=${encodeURIComponent(id)}`);
         if (response.ok) {
           const data: Student = await response.json();
           setStudent(data);
@@ -44,14 +42,14 @@ const SuccessPage = () => {
           setUpdateAge(data.age.toString());
           setUpdateBloodType(data.bloodType);
         } else {
-          console.error('Failed to fetch student data');
+          console.error('Failed to fetch student data:', response.statusText);
         }
       } catch (error) {
         console.error('An error occurred while fetching student data:', error);
       }
     }
-  }, [isMounted, router.query]);
-
+  }, [router.query]);
+  
   useEffect(() => {
     fetchStudentData();
   }, [fetchStudentData]);
