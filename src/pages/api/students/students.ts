@@ -10,11 +10,20 @@ interface Student {
 // Mock database (use an actual database in production)
 const students: Student[] = [];
 
+// Debugging function to log requests
+const logRequest = (req: NextApiRequest) => {
+  console.log(`Received ${req.method} request at ${req.url}`);
+  console.log('Query:', req.query);
+  console.log('Body:', req.body);
+};
+
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  logRequest(req); // Log the request for debugging
+
   switch (req.method) {
     case 'GET': {
       const { id } = req.query;
-      if (id) {
+      if (typeof id === 'string') {
         const student = students.find((student) => student.id === id);
         if (student) {
           return res.status(200).json(student);
@@ -27,7 +36,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     case 'POST': {
       const { name, age, bloodType } = req.body;
-
       if (!name || age === undefined || !bloodType) {
         return res.status(400).json({ error: 'Missing fields' });
       }
@@ -45,6 +53,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     case 'PUT': {
       const updateData = req.body;
+      if (!updateData.id) {
+        return res.status(400).json({ error: 'ID is required for updating' });
+      }
       const studentIndex = students.findIndex((student) => student.id === updateData.id);
 
       if (studentIndex !== -1) {
@@ -57,6 +68,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     case 'DELETE': {
       const deleteId = req.query.id as string;
+      if (!deleteId) {
+        return res.status(400).json({ error: 'ID query parameter is required' });
+      }
       const deleteIndex = students.findIndex((student) => student.id === deleteId);
 
       if (deleteIndex !== -1) {
