@@ -11,14 +11,14 @@ interface Student {
 
 const SuccessPage = () => {
   const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false); // State to track when the component is mounted
+  const [isMounted, setIsMounted] = useState(false);
   const [student, setStudent] = useState<Student | null>(null);
   const [updateName, setUpdateName] = useState<string>('');
   const [updateAge, setUpdateAge] = useState<string>('');
   const [updateBloodType, setUpdateBloodType] = useState<string>('');
 
   useEffect(() => {
-    setIsMounted(true); // Set to true when the component is mounted on the client
+    setIsMounted(true);
   }, []);
 
   useEffect(() => {
@@ -31,7 +31,6 @@ const SuccessPage = () => {
     }
   }, [isMounted, router.query]);
 
-  // Memoize the fetch function to avoid issues in the dependency array
   const fetchStudentData = useCallback(async () => {
     const { id } = router.query;
     if (isMounted && typeof id === 'string') {
@@ -58,47 +57,51 @@ const SuccessPage = () => {
 
   const handleDelete = async () => {
     const { id } = router.query;
-    try {
-      const response = await fetch(`/api/students/students?id=${id}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        router.push('/success?message=Student%20deleted%20successfully');
-      } else {
-        console.error('Failed to delete student');
+    if (typeof id === 'string') {
+      try {
+        const response = await fetch(`/api/students/students?id=${id}`, {
+          method: 'DELETE',
+        });
+        if (response.ok) {
+          router.push('/success?message=Student%20deleted%20successfully');
+        } else {
+          console.error('Failed to delete student');
+        }
+      } catch (error) {
+        console.error('An error occurred while deleting student:', error);
       }
-    } catch (error) {
-      console.error('An error occurred while deleting student:', error);
     }
   };
 
   const handleUpdate = async (event: React.FormEvent) => {
     event.preventDefault();
     const { id } = router.query;
-    try {
-      const response = await fetch('/api/students/students', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id,
-          name: updateName,
-          age: Number(updateAge), // Convert updateAge to number
-          bloodType: updateBloodType,
-        }),
-      });
-      if (response.ok) {
-        const data: Student = await response.json();
-        setStudent(data);
-        router.push(
-          `/success?id=${id}&name=${encodeURIComponent(data.name)}&age=${data.age}&bloodType=${encodeURIComponent(data.bloodType)}&message=Student%20updated%20successfully`
-        );
-      } else {
-        console.error('Failed to update student');
+    if (typeof id === 'string') {
+      try {
+        const response = await fetch('/api/students/students', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id,
+            name: updateName,
+            age: Number(updateAge),
+            bloodType: updateBloodType,
+          }),
+        });
+        if (response.ok) {
+          const data: Student = await response.json();
+          setStudent(data);
+          router.push(
+            `/success?id=${id}&name=${encodeURIComponent(data.name)}&age=${data.age}&bloodType=${encodeURIComponent(data.bloodType)}&message=Student%20updated%20successfully`
+          );
+        } else {
+          console.error('Failed to update student');
+        }
+      } catch (error) {
+        console.error('An error occurred while updating student:', error);
       }
-    } catch (error) {
-      console.error('An error occurred while updating student:', error);
     }
   };
 
