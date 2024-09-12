@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import React from 'react';
-
 
 interface Student {
   id: string;
@@ -19,28 +18,29 @@ const SuccessPage = () => {
   const [updateAge, setUpdateAge] = useState<string>(typeof age === 'string' ? age : '');
   const [updateBloodType, setUpdateBloodType] = useState<string>(typeof bloodType === 'string' ? bloodType : '');
 
-  useEffect(() => {
+  // Memoize the fetch function to avoid issues in the dependency array
+  const fetchStudentData = useCallback(async () => {
     if (typeof id === 'string') {
-      fetchStudentData();
-    }
-  }, [id]);
-
-  const fetchStudentData = async () => {
-    try {
-      const response = await fetch(`/api/students/students?id=${id}`);
-      if (response.ok) {
-        const data: Student = await response.json();
-        setStudent(data);
-        setUpdateName(data.name);
-        setUpdateAge(data.age.toString()); // Convert age to string
-        setUpdateBloodType(data.bloodType);
-      } else {
-        console.error('Failed to fetch student data');
+      try {
+        const response = await fetch(`/api/students/students?id=${id}`);
+        if (response.ok) {
+          const data: Student = await response.json();
+          setStudent(data);
+          setUpdateName(data.name);
+          setUpdateAge(data.age.toString());
+          setUpdateBloodType(data.bloodType);
+        } else {
+          console.error('Failed to fetch student data');
+        }
+      } catch (error) {
+        console.error('An error occurred while fetching student data:', error);
       }
-    } catch (error) {
-      console.error('An error occurred while fetching student data:', error);
     }
-  };
+  }, [id]); // Include `id` as a dependency
+
+  useEffect(() => {
+    fetchStudentData();
+  }, [fetchStudentData]); // Now fetchStudentData is a dependency
 
   const handleDelete = async () => {
     try {
@@ -65,12 +65,19 @@ const SuccessPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id, name: updateName, age: Number(updateAge), bloodType: updateBloodType }), // Convert updateAge to number
+        body: JSON.stringify({
+          id,
+          name: updateName,
+          age: Number(updateAge), // Convert updateAge to number
+          bloodType: updateBloodType,
+        }),
       });
       if (response.ok) {
         const data: Student = await response.json();
         setStudent(data);
-        router.push(`/success?id=${id}&name=${encodeURIComponent(data.name)}&age=${data.age}&bloodType=${encodeURIComponent(data.bloodType)}&message=Student%20updated%20successfully`);
+        router.push(
+          `/success?id=${id}&name=${encodeURIComponent(data.name)}&age=${data.age}&bloodType=${encodeURIComponent(data.bloodType)}&message=Student%20updated%20successfully`
+        );
       } else {
         console.error('Failed to update student');
       }
@@ -88,10 +95,18 @@ const SuccessPage = () => {
       <h1 style={styles.header as React.CSSProperties}>Success</h1>
       {message && <p style={styles.message as React.CSSProperties}>{message}</p>}
       <div style={styles.info as React.CSSProperties}>
-        <p><strong>Student ID:</strong> {id}</p>
-        <p><strong>Name:</strong> {name}</p>
-        <p><strong>Age:</strong> {age}</p>
-        <p><strong>Blood Type:</strong> {bloodType}</p>
+        <p>
+          <strong>Student ID:</strong> {id}
+        </p>
+        <p>
+          <strong>Name:</strong> {name}
+        </p>
+        <p>
+          <strong>Age:</strong> {age}
+        </p>
+        <p>
+          <strong>Blood Type:</strong> {bloodType}
+        </p>
       </div>
 
       {student && (
@@ -99,7 +114,9 @@ const SuccessPage = () => {
           <h2 style={styles.subHeader as React.CSSProperties}>Update Student</h2>
           <form onSubmit={handleUpdate} style={styles.form as React.CSSProperties}>
             <div style={styles.formGroup as React.CSSProperties}>
-              <label htmlFor="updateName" style={styles.label as React.CSSProperties}>Name:</label>
+              <label htmlFor="updateName" style={styles.label as React.CSSProperties}>
+                Name:
+              </label>
               <input
                 id="updateName"
                 value={updateName}
@@ -110,7 +127,9 @@ const SuccessPage = () => {
               />
             </div>
             <div style={styles.formGroup as React.CSSProperties}>
-              <label htmlFor="updateAge" style={styles.label as React.CSSProperties}>Age:</label>
+              <label htmlFor="updateAge" style={styles.label as React.CSSProperties}>
+                Age:
+              </label>
               <input
                 id="updateAge"
                 value={updateAge}
@@ -121,7 +140,9 @@ const SuccessPage = () => {
               />
             </div>
             <div style={styles.formGroup as React.CSSProperties}>
-              <label htmlFor="updateBloodType" style={styles.label as React.CSSProperties}>Blood Type:</label>
+              <label htmlFor="updateBloodType" style={styles.label as React.CSSProperties}>
+                Blood Type:
+              </label>
               <input
                 id="updateBloodType"
                 value={updateBloodType}
@@ -131,14 +152,20 @@ const SuccessPage = () => {
                 style={styles.input as React.CSSProperties}
               />
             </div>
-            <button type="submit" style={styles.button as React.CSSProperties}>Update</button>
+            <button type="submit" style={styles.button as React.CSSProperties}>
+              Update
+            </button>
           </form>
 
-          <button onClick={handleDelete} style={{ ...styles.button, backgroundColor: '#ff4d4f' }}>Delete Student</button>
+          <button onClick={handleDelete} style={{ ...styles.button, backgroundColor: '#ff4d4f' }}>
+            Delete Student
+          </button>
         </div>
       )}
 
-      <button onClick={handleRedirectToManageStudentPage} style={styles.button as React.CSSProperties}>Go to Manage Page</button>
+      <button onClick={handleRedirectToManageStudentPage} style={styles.button as React.CSSProperties}>
+        Go to Manage Page
+      </button>
     </div>
   );
 };
