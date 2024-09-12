@@ -8,14 +8,15 @@ interface Student {
   bloodType: string;
 }
 
-let students: Student[] = []; // Mock database
+// Use const instead of let
+const students: Student[] = []; // Mock database
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     const { name, age, bloodType } = req.body;
 
     // Basic validation
-    if (!name || !age || !bloodType) {
+    if (!name || age === undefined || !bloodType) {
       return res.status(400).json({ error: 'Missing fields' });
     }
 
