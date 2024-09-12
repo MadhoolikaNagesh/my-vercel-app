@@ -22,19 +22,19 @@ const SuccessPage = () => {
   }, []);
 
   useEffect(() => {
-    if (isMounted) {
+    if (isMounted && router.query) {
       const { id, name, age, bloodType } = router.query;
-      setUpdateName(typeof name === 'string' ? name : '');
-      setUpdateAge(typeof age === 'string' ? age : '');
-      setUpdateBloodType(typeof bloodType === 'string' ? bloodType : '');
+      if (typeof name === 'string') setUpdateName(name);
+      if (typeof age === 'string') setUpdateAge(age);
+      if (typeof bloodType === 'string') setUpdateBloodType(bloodType);
     }
   }, [isMounted, router.query]);
 
   const fetchStudentData = useCallback(async () => {
     const { id } = router.query;
-    if (id && typeof id === 'string') {
+    if (typeof id === 'string') {
       try {
-        const response = await fetch(`/api/students/students?id=${encodeURIComponent(id)}`);
+        const response = await fetch(`/api/students/${id}`);
         if (response.ok) {
           const data: Student = await response.json();
           setStudent(data);
@@ -49,7 +49,7 @@ const SuccessPage = () => {
       }
     }
   }, [router.query]);
-  
+
   useEffect(() => {
     fetchStudentData();
   }, [fetchStudentData]);
@@ -58,7 +58,7 @@ const SuccessPage = () => {
     const { id } = router.query;
     if (typeof id === 'string') {
       try {
-        const response = await fetch(`/api/students/students?id=${id}`, {
+        const response = await fetch(`/api/students/${id}`, {
           method: 'DELETE',
         });
         if (response.ok) {
@@ -77,7 +77,7 @@ const SuccessPage = () => {
     const { id } = router.query;
     if (typeof id === 'string') {
       try {
-        const response = await fetch('/api/students/students', {
+        const response = await fetch('/api/students', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -111,22 +111,24 @@ const SuccessPage = () => {
   return (
     <div style={styles.container as React.CSSProperties}>
       <h1 style={styles.header as React.CSSProperties}>Success</h1>
-      {isMounted && router.query.message && <p style={styles.message as React.CSSProperties}>{router.query.message}</p>}
+      {isMounted && router.query.message && (
+        <p style={styles.message as React.CSSProperties}>{router.query.message}</p>
+      )}
       <div style={styles.info as React.CSSProperties}>
         {isMounted && (
           <>
-            <p>
-              <strong>Student ID:</strong> {router.query.id}
-            </p>
-            <p>
-              <strong>Name:</strong> {router.query.name}
-            </p>
-            <p>
-              <strong>Age:</strong> {router.query.age}
-            </p>
-            <p>
-              <strong>Blood Type:</strong> {router.query.bloodType}
-            </p>
+            {router.query.id && (
+              <p><strong>Student ID:</strong> {router.query.id}</p>
+            )}
+            {router.query.name && (
+              <p><strong>Name:</strong> {router.query.name}</p>
+            )}
+            {router.query.age && (
+              <p><strong>Age:</strong> {router.query.age}</p>
+            )}
+            {router.query.bloodType && (
+              <p><strong>Blood Type:</strong> {router.query.bloodType}</p>
+            )}
           </>
         )}
       </div>
@@ -218,6 +220,8 @@ const styles = {
     borderRadius: '8px',
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
     marginBottom: '20px',
+    width: '100%',
+    maxWidth: '600px',
   },
   formContainer: {
     backgroundColor: '#fff',
