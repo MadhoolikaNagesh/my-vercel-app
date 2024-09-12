@@ -6,11 +6,11 @@ const StudentForm = () => {
   const [name, setName] = useState('');
   const [age, setAge] = useState<number | ''>('');
   const [bloodType, setBloodType] = useState('');
-  const [isMounted, setIsMounted] = useState(false); // New state to track when the component has mounted
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    setIsMounted(true); // Set isMounted to true once the component has mounted
+    setIsMounted(true);
   }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -31,16 +31,17 @@ const StudentForm = () => {
         const data = await response.json();
         const { id } = data;
 
-        // Only use router.push if the component is mounted (client-side)
         if (isMounted) {
           router.push(`/success?id=${id}&name=${encodeURIComponent(name)}&age=${ageNumber}&bloodType=${encodeURIComponent(bloodType)}`);
         }
       } else {
         const errorData = await response.json();
         console.error('Failed to submit form:', errorData);
+        alert(`Error: ${errorData.error || 'Failed to submit form'}`);
       }
     } catch (error) {
       console.error('An unexpected error occurred:', error);
+      alert('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -115,9 +116,6 @@ const formStyles = {
     outline: 'none',
     transition: 'border-color 0.3s ease',
   },
-  inputFocus: {
-    borderColor: '#0070f3',
-  },
   button: {
     padding: '12px',
     backgroundColor: '#0070f3',
@@ -128,7 +126,5 @@ const formStyles = {
     cursor: 'pointer',
     transition: 'background-color 0.3s ease',
   },
-  buttonHover: {
-    backgroundColor: '#005bb5',
-  },
 };
+
