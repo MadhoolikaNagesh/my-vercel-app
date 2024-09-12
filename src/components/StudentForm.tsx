@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import React from 'react';
 
@@ -6,7 +6,12 @@ const StudentForm = () => {
   const [name, setName] = useState('');
   const [age, setAge] = useState<number | ''>('');
   const [bloodType, setBloodType] = useState('');
+  const [isMounted, setIsMounted] = useState(false); // New state to track when the component has mounted
   const router = useRouter();
+
+  useEffect(() => {
+    setIsMounted(true); // Set isMounted to true once the component has mounted
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -25,7 +30,11 @@ const StudentForm = () => {
       if (response.ok) {
         const data = await response.json();
         const { id } = data;
-        router.push(`/success?id=${id}&name=${encodeURIComponent(name)}&age=${ageNumber}&bloodType=${encodeURIComponent(bloodType)}`);
+
+        // Only use router.push if the component is mounted (client-side)
+        if (isMounted) {
+          router.push(`/success?id=${id}&name=${encodeURIComponent(name)}&age=${ageNumber}&bloodType=${encodeURIComponent(bloodType)}`);
+        }
       } else {
         const errorData = await response.json();
         console.error('Failed to submit form:', errorData);

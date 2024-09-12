@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import React from 'react';
-
 
 interface Student {
   id: string;
@@ -12,37 +11,53 @@ interface Student {
 
 const SuccessPage = () => {
   const router = useRouter();
-  const { id, name, age, bloodType, message } = router.query;
-
+  const [isMounted, setIsMounted] = useState(false); // State to track when the component is mounted
   const [student, setStudent] = useState<Student | null>(null);
-  const [updateName, setUpdateName] = useState<string>(typeof name === 'string' ? name : '');
-  const [updateAge, setUpdateAge] = useState<string>(typeof age === 'string' ? age : '');
-  const [updateBloodType, setUpdateBloodType] = useState<string>(typeof bloodType === 'string' ? bloodType : '');
+  const [updateName, setUpdateName] = useState<string>('');
+  const [updateAge, setUpdateAge] = useState<string>('');
+  const [updateBloodType, setUpdateBloodType] = useState<string>('');
 
   useEffect(() => {
-    if (typeof id === 'string') {
-      fetchStudentData();
-    }
-  }, [id]);
+    setIsMounted(true); // Set to true when the component is mounted on the client
+  }, []);
 
-  const fetchStudentData = async () => {
-    try {
-      const response = await fetch(`/api/students/students?id=${id}`);
-      if (response.ok) {
-        const data: Student = await response.json();
-        setStudent(data);
-        setUpdateName(data.name);
-        setUpdateAge(data.age.toString()); // Convert age to string
-        setUpdateBloodType(data.bloodType);
-      } else {
-        console.error('Failed to fetch student data');
-      }
-    } catch (error) {
-      console.error('An error occurred while fetching student data:', error);
+  useEffect(() => {
+    if (isMounted) {
+      const { id, name, age, bloodType } = router.query;
+
+      setUpdateName(typeof name === 'string' ? name : '');
+      setUpdateAge(typeof age === 'string' ? age : '');
+      setUpdateBloodType(typeof bloodType === 'string' ? bloodType : '');
     }
-  };
+  }, [isMounted, router.query]);
+
+  // Memoize the fetch function to avoid issues in the dependency array
+  const fetchStudentData = useCallback(async () => {
+    const { id } = router.query;
+    if (isMounted && typeof id === 'string') {
+      try {
+        const response = await fetch(`/api/students/students?id=${id}`);
+        if (response.ok) {
+          const data: Student = await response.json();
+          setStudent(data);
+          setUpdateName(data.name);
+          setUpdateAge(data.age.toString());
+          setUpdateBloodType(data.bloodType);
+        } else {
+          console.error('Failed to fetch student data');
+        }
+      } catch (error) {
+        console.error('An error occurred while fetching student data:', error);
+      }
+    }
+  }, [isMounted, router.query]);
+
+  useEffect(() => {
+    fetchStudentData();
+  }, [fetchStudentData]);
 
   const handleDelete = async () => {
+    const { id } = router.query;
     try {
       const response = await fetch(`/api/students/students?id=${id}`, {
         method: 'DELETE',
@@ -59,18 +74,26 @@ const SuccessPage = () => {
 
   const handleUpdate = async (event: React.FormEvent) => {
     event.preventDefault();
+    const { id } = router.query;
     try {
       const response = await fetch('/api/students/students', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id, name: updateName, age: Number(updateAge), bloodType: updateBloodType }), // Convert updateAge to number
+        body: JSON.stringify({
+          id,
+          name: updateName,
+          age: Number(updateAge), // Convert updateAge to number
+          bloodType: updateBloodType,
+        }),
       });
       if (response.ok) {
         const data: Student = await response.json();
         setStudent(data);
-        router.push(`/success?id=${id}&name=${encodeURIComponent(data.name)}&age=${data.age}&bloodType=${encodeURIComponent(data.bloodType)}&message=Student%20updated%20successfully`);
+        router.push(
+          `/success?id=${id}&name=${encodeURIComponent(data.name)}&age=${data.age}&bloodType=${encodeURIComponent(data.bloodType)}&message=Student%20updated%20successfully`
+        );
       } else {
         console.error('Failed to update student');
       }
@@ -86,12 +109,24 @@ const SuccessPage = () => {
   return (
     <div style={styles.container as React.CSSProperties}>
       <h1 style={styles.header as React.CSSProperties}>Success</h1>
-      {message && <p style={styles.message as React.CSSProperties}>{message}</p>}
+      {isMounted && router.query.message && <p style={styles.message as React.CSSProperties}>{router.query.message}</p>}
       <div style={styles.info as React.CSSProperties}>
-        <p><strong>Student ID:</strong> {id}</p>
-        <p><strong>Name:</strong> {name}</p>
-        <p><strong>Age:</strong> {age}</p>
-        <p><strong>Blood Type:</strong> {bloodType}</p>
+        {isMounted && (
+          <>
+            <p>
+              <strong>Student ID:</strong> {router.query.id}
+            </p>
+            <p>
+              <strong>Name:</strong> {router.query.name}
+            </p>
+            <p>
+              <strong>Age:</strong> {router.query.age}
+            </p>
+            <p>
+              <strong>Blood Type:</strong> {router.query.bloodType}
+            </p>
+          </>
+        )}
       </div>
 
       {student && (
@@ -99,7 +134,9 @@ const SuccessPage = () => {
           <h2 style={styles.subHeader as React.CSSProperties}>Update Student</h2>
           <form onSubmit={handleUpdate} style={styles.form as React.CSSProperties}>
             <div style={styles.formGroup as React.CSSProperties}>
-              <label htmlFor="updateName" style={styles.label as React.CSSProperties}>Name:</label>
+              <label htmlFor="updateName" style={styles.label as React.CSSProperties}>
+                Name:
+              </label>
               <input
                 id="updateName"
                 value={updateName}
@@ -110,7 +147,9 @@ const SuccessPage = () => {
               />
             </div>
             <div style={styles.formGroup as React.CSSProperties}>
-              <label htmlFor="updateAge" style={styles.label as React.CSSProperties}>Age:</label>
+              <label htmlFor="updateAge" style={styles.label as React.CSSProperties}>
+                Age:
+              </label>
               <input
                 id="updateAge"
                 value={updateAge}
@@ -121,7 +160,9 @@ const SuccessPage = () => {
               />
             </div>
             <div style={styles.formGroup as React.CSSProperties}>
-              <label htmlFor="updateBloodType" style={styles.label as React.CSSProperties}>Blood Type:</label>
+              <label htmlFor="updateBloodType" style={styles.label as React.CSSProperties}>
+                Blood Type:
+              </label>
               <input
                 id="updateBloodType"
                 value={updateBloodType}
@@ -131,14 +172,20 @@ const SuccessPage = () => {
                 style={styles.input as React.CSSProperties}
               />
             </div>
-            <button type="submit" style={styles.button as React.CSSProperties}>Update</button>
+            <button type="submit" style={styles.button as React.CSSProperties}>
+              Update
+            </button>
           </form>
 
-          <button onClick={handleDelete} style={{ ...styles.button, backgroundColor: '#ff4d4f' }}>Delete Student</button>
+          <button onClick={handleDelete} style={{ ...styles.button, backgroundColor: '#ff4d4f' }}>
+            Delete Student
+          </button>
         </div>
       )}
 
-      <button onClick={handleRedirectToManageStudentPage} style={styles.button as React.CSSProperties}>Go to Manage Page</button>
+      <button onClick={handleRedirectToManageStudentPage} style={styles.button as React.CSSProperties}>
+        Go to Manage Page
+      </button>
     </div>
   );
 };

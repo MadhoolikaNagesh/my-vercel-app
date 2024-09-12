@@ -1,23 +1,26 @@
 import Head from "next/head";
 import React from 'react';
-
-
-
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import StudentForm from '../components/StudentForm';
 
 const HomePage = () => {
   return (
-    <div style={inlineStyles.container as React.CSSProperties}>
+    <div style={inlineStyles.container}>
       <Head>
         <title>Student Details</title>
       </Head>
 
-      <div style={inlineStyles.contentWrapper as React.CSSProperties}>
+      <div style={inlineStyles.contentWrapper}>
         <SignedOut>
-          <p style={inlineStyles.message as React.CSSProperties}>Please sign in to access the form.</p>
+          <p style={inlineStyles.message}>Please sign in to access the form.</p>
           <SignInButton>
-            <button style={inlineStyles.button as React.CSSProperties}>Sign In</button>
+            <button
+              style={inlineStyles.button}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = inlineStyles.buttonHover.backgroundColor)}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = inlineStyles.button.backgroundColor)}
+            >
+              Sign In
+            </button>
           </SignInButton>
         </SignedOut>
 
@@ -46,7 +49,7 @@ const inlineStyles = {
     padding: '40px',
     borderRadius: '8px',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    textAlign: 'center' as 'center', // Explicitly casting the value
+    textAlign: 'center' as const, // Use `as const` instead of literal type assertion
     width: '100%',
     maxWidth: '500px',
   },
