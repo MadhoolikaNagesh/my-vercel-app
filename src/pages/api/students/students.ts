@@ -1,4 +1,3 @@
-// pages/api/students/students.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 interface Student {
@@ -13,7 +12,7 @@ const students: Student[] = [];
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
-    case 'GET':
+    case 'GET': {
       const { id } = req.query;
       if (id) {
         const student = students.find((student) => student.id === id);
@@ -24,8 +23,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         }
       }
       return res.status(400).json({ error: 'ID query parameter is required' });
+    }
 
-    case 'POST':
+    case 'POST': {
       const { name, age, bloodType } = req.body;
 
       if (!name || age === undefined || !bloodType) {
@@ -41,8 +41,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
       students.push(newStudent);
       return res.status(201).json(newStudent);
+    }
 
-    case 'PUT':
+    case 'PUT': {
       const updateData = req.body;
       const studentIndex = students.findIndex((student) => student.id === updateData.id);
 
@@ -52,8 +53,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       } else {
         return res.status(404).json({ error: 'Student not found' });
       }
+    }
 
-    case 'DELETE':
+    case 'DELETE': {
       const deleteId = req.query.id as string;
       const deleteIndex = students.findIndex((student) => student.id === deleteId);
 
@@ -63,9 +65,11 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       } else {
         return res.status(404).json({ error: 'Student not found' });
       }
+    }
 
-    default:
+    default: {
       res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
       return res.status(405).end(`Method ${req.method} Not Allowed`);
+    }
   }
 }
