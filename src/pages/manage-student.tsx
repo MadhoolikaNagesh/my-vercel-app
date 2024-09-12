@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@clerk/nextjs';
+import React from 'react';
 
 // Define the type for student data
 interface Student {

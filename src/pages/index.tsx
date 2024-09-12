@@ -1,5 +1,6 @@
 import Head from "next/head";
-import localFont from "next/font/local";
+import React from 'react';
+
 
 
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
